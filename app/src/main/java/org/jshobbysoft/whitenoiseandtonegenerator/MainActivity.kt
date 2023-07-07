@@ -216,7 +216,7 @@ class MainActivity : ComponentActivity() {
                                             numFormatError = false
                                         } catch (e: Exception) {
                                             scope.launch {
-                                                snackBarHostState.showSnackbar("Format error: frequency must be a number (optionally with a decimal)")
+                                                snackBarHostState.showSnackbar("Format error: frequency must be a number (optionally with a decimal point)")
                                             }
                                         }
                                         if (!numFormatError) {
@@ -226,7 +226,7 @@ class MainActivity : ComponentActivity() {
                                                     false
                                                 } catch (e: Exception) {
                                                     scope.launch {
-                                                        snackBarHostState.showSnackbar("Format error: wave effect amplitude value must be a number (optionally with a decimal)")
+                                                        snackBarHostState.showSnackbar("Format error: wave effect amplitude value must be a number (optionally with a decimal point)")
                                                     }
                                                     true
                                                 }
@@ -238,7 +238,7 @@ class MainActivity : ComponentActivity() {
                                                     false
                                                 } catch (e: Exception) {
                                                     scope.launch {
-                                                        snackBarHostState.showSnackbar("Format error: wave effect frequency value must be a number (optionally with a decimal)")
+                                                        snackBarHostState.showSnackbar("Format error: wave effect frequency value must be a number (optionally with a decimal point)")
                                                     }
                                                     true
                                                 }
