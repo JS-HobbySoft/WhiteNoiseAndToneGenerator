@@ -49,6 +49,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jshobbysoft.whitenoiseandtonegenerator.ui.theme.WhiteNoiseAndToneGeneratorTheme
+import java.lang.Exception
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.random.Random
@@ -209,7 +210,40 @@ class MainActivity : ComponentActivity() {
 //                                  https://www.geeksforgeeks.org/play-audio-in-android-using-jetpack-compose/
 //                                  https://stackoverflow.com/questions/72926359/show-snackbar-in-material-design-3-using-scaffold
                                     IconButton(onClick = {
-                                        if (!isPlaying) {
+                                        var numFormatError = true
+                                        try {
+                                            numInputFreq.toFloat()
+                                            numFormatError = false
+                                        } catch (e: Exception) {
+                                            scope.launch {
+                                                snackBarHostState.showSnackbar("Format error: frequency must be a number (optionally with a decimal)")
+                                            }
+                                        }
+                                        if (!numFormatError) {
+                                            numFormatError =
+                                                try {
+                                                    numInputAmpAmp.toFloat()
+                                                    false
+                                                } catch (e: Exception) {
+                                                    scope.launch {
+                                                        snackBarHostState.showSnackbar("Format error: wave effect amplitude value must be a number (optionally with a decimal)")
+                                                    }
+                                                    true
+                                                }
+                                        }
+                                        if (!numFormatError) {
+                                            numFormatError =
+                                                try {
+                                                    numInputAmpFreq.toFloat()
+                                                    false
+                                                } catch (e: Exception) {
+                                                    scope.launch {
+                                                        snackBarHostState.showSnackbar("Format error: wave effect frequency value must be a number (optionally with a decimal)")
+                                                    }
+                                                    true
+                                                }
+                                        }
+                                        if (!isPlaying && !numFormatError) {
                                             if (numInputFreq.toFloat() > 20000 || numInputFreq.toFloat() < 20) {
                                                 scope.launch {
                                                     snackBarHostState.showSnackbar("Frequency must be between 20-20000")
