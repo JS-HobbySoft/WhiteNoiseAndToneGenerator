@@ -164,7 +164,7 @@ class MainActivity : ComponentActivity() {
                                             )
                                         },
                                         colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                                        modifier = Modifier.menuAnchor()
+//                                        modifier = Modifier.menuAnchor()
                                     )
                                     ExposedDropdownMenu(
                                         expanded = expanded,
