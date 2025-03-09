@@ -13,20 +13,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,12 +41,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -112,94 +119,433 @@ class MainActivity : ComponentActivity() {
                                     .padding(all = 40.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
+                                var t0 by remember { mutableStateOf("0") }
+                                var t1 by remember { mutableStateOf("0") }
+                                var t2 by remember { mutableStateOf("0") }
+                                var t3 by remember { mutableStateOf("0") }
+                                var t4 by remember { mutableStateOf("0") }
+                                val plusMinusButtonWidth = 30.dp
+                                val freqDigitWidth = 40.sp
+
                                 val initToneFreq =
                                     DataStoreManager(LocalContext.current).getFromDataStoreFT()
                                 var numInputFreq by remember { mutableStateOf(initToneFreq.toString()) }
-                                TextField(
-                                    value = numInputFreq,
-                                    onValueChange = { numInputFreq = it },
-                                    label = { Text("Enter tone frequency\n(20-20000)") }
-                                )
-
                                 val initWaveAmp =
                                     DataStoreManager(LocalContext.current).getFromDataStoreWA()
                                 var numInputAmpAmp by remember { mutableStateOf(initWaveAmp.toString()) }
-                                TextField(
-                                    value = numInputAmpAmp,
-                                    onValueChange = { numInputAmpAmp = it },
-                                    label = { Text("Enter volume wave effect amplitude\n(0-32767, 0 to disable)") }
-                                )
-
                                 val initWaveFreq =
                                     DataStoreManager(LocalContext.current).getFromDataStoreWF()
                                 var numInputAmpFreq by remember { mutableStateOf(initWaveFreq.toString()) }
-                                TextField(
-                                    value = numInputAmpFreq,
-                                    onValueChange = { numInputAmpFreq = it },
-                                    label = { Text("Enter volume wave effect frequency\n(0-5, 0 to disable)") }
-                                )
-
-//                              https://stackoverflow.com/questions/74248340/changing-the-jetpack-compose-remember-variable-from-within-another-function
-//                              https://stackoverflow.com/questions/67111020/exposed-drop-down-menu-for-jetpack-compose
-                                val options = listOf("White", "Pink", "Brownian")
-                                var expanded by remember { mutableStateOf(false) }
-                                val initNoiseType =
-                                    DataStoreManager(LocalContext.current).getFromDataStoreNT()
-                                var noiseType by remember { mutableStateOf(initNoiseType) }
-
-                                ExposedDropdownMenuBox(
-                                    expanded = expanded,
-                                    onExpandedChange = {
-                                        expanded = !expanded
-                                    }
-                                ) {
-                                    TextField(
-                                        readOnly = true,
-                                        value = noiseType,
-                                        onValueChange = { },
-                                        label = { Text("Select noise type") },
-                                        trailingIcon = {
-                                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                                expanded = expanded
-                                            )
-                                        },
-                                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-//                                        modifier = Modifier.menuAnchor()
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = expanded,
-                                        onDismissRequest = {
-                                            expanded = false
-                                        }
-                                    ) {
-                                        options.forEach { selectionOption ->
-                                            DropdownMenuItem(
-                                                text = { Text(text = selectionOption) },
-                                                onClick = {
-                                                    noiseType = selectionOption
-                                                    expanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.size(10.dp))
-                                Text(text = "Percent of noise in the tone\n(0 for pure tone, 100 for pure noise)")
-
                                 val initNoisePct =
                                     DataStoreManager(LocalContext.current).getFromDataStoreNP()
+                                val initNoiseType =
+                                    DataStoreManager(LocalContext.current).getFromDataStoreNT()
+                                val options = listOf("White", "Pink", "Brownian")
+//                                var expanded by remember { mutableStateOf(false) }
+                                var noiseType by remember { mutableStateOf(initNoiseType) }
+                                var selectedIndex by remember { mutableIntStateOf(0) }
                                 var noisePct by remember {
                                     mutableFloatStateOf(
                                         initNoisePct.toString().toFloat()
                                     )
                                 }
+
+                                when (numInputFreq.length) {
+                                    5 -> {
+                                        t0 = numInputFreq[0].toString()
+                                        t1 = numInputFreq[1].toString()
+                                        t2 = numInputFreq[2].toString()
+                                        t3 = numInputFreq[3].toString()
+                                        t4 = numInputFreq[4].toString()
+                                    }
+                                    4 -> {
+                                        t0 = "0"
+                                        t1 = numInputFreq[0].toString()
+                                        t2 = numInputFreq[1].toString()
+                                        t3 = numInputFreq[2].toString()
+                                        t4 = numInputFreq[3].toString()
+                                    }
+                                    3 -> {
+                                        t0 = "0"
+                                        t1 = "0"
+                                        t2 = numInputFreq[0].toString()
+                                        t3 = numInputFreq[1].toString()
+                                        t4 = numInputFreq[2].toString()
+                                    }
+                                    2 -> {
+                                        t0 = "0"
+                                        t1 = "0"
+                                        t2 = "0"
+                                        t3 = numInputFreq[0].toString()
+                                        t4 = numInputFreq[1].toString()
+                                    }
+                                    1 -> {
+                                        t0 = "0"
+                                        t1 = "0"
+                                        t2 = "0"
+                                        t3 = "0"
+                                        t4 = numInputFreq[0].toString()
+                                    }
+                                    else -> {
+                                        t0 = "9"
+                                        t1 = "9"
+                                        t2 = "9"
+                                        t3 = "9"
+                                        t4 = "9"
+                                    }
+                                }
+
+                                Text(
+                                    text = "Enter tone frequency (20-20000)",
+                                    fontSize = 20.sp
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(all = 4.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+//                                    t0
+                                    Column(
+                                        modifier = Modifier
+//                                            .fillMaxSize()
+                                            .padding(all = 4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                if (t0.toInt() < 2) {
+                                                    t0 = (t0.toInt() + 1).toString()
+                                                    numInputFreq = (t0+t1+t2+t3+t4)
+                                                    if (isPlaying) {
+                                                        restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                    }
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "+",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+
+                                        Text(
+                                            text = t0,
+                                            fontSize = freqDigitWidth
+                                        )
+
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                if (t0.toInt() > 0){
+                                                    t0 = (t0.toInt() - 1).toString()
+                                                    numInputFreq = (t0+t1+t2+t3+t4)
+                                                    if (isPlaying) {
+                                                        restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                    }
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "-",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+                                    }
+
+//                                    t1
+                                    Column(
+                                        modifier = Modifier
+//                                            .fillMaxSize()
+                                            .padding(all = 4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t1 = ((t1.toInt() + 1) % 10).toString()
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "+",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+
+                                        Text(
+                                            text = t1,
+                                            fontSize = freqDigitWidth
+                                        )
+
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t1 = if (t1 == "0") "9" else { (t1.toInt() - 1).toString() }
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "-",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+                                    }
+
+//                                    t2
+                                    Column(
+                                        modifier = Modifier
+//                                            .fillMaxSize()
+                                            .padding(all = 4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t2 = ((t2.toInt() + 1) % 10).toString()
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "+",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+
+                                        Text(
+                                            text = t2,
+                                            fontSize = freqDigitWidth
+                                        )
+
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t2 = if (t2 == "0") "9" else { (t2.toInt() - 1).toString() }
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "-",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+                                    }
+
+//                                    t3
+                                    Column(
+                                        modifier = Modifier
+//                                            .fillMaxSize()
+                                            .padding(all = 4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t3 = ((t3.toInt() + 1) % 10).toString()
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "+",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+
+                                        Text(
+                                            text = t3,
+                                            fontSize = freqDigitWidth
+                                        )
+
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t3 = if (t3 == "0") "9" else { (t3.toInt() - 1).toString() }
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "-",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+                                    }
+
+//                                    t4
+                                    Column(
+                                        modifier = Modifier
+//                                            .fillMaxSize()
+                                            .padding(all = 4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t4 = ((t4.toInt() + 1) % 10).toString()
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "+",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+
+                                        Text(
+                                            text = t4,
+                                            fontSize = freqDigitWidth
+                                        )
+
+                                        Button(
+                                            modifier = Modifier
+                                                .padding(all = 1.dp)
+                                                .size(size = plusMinusButtonWidth),
+                                            onClick = {
+                                                t4 = if (t4 == "0") "9" else { (t4.toInt() - 1).toString() }
+                                                numInputFreq = (t0+t1+t2+t3+t4)
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(size = 8.dp),
+                                            contentPadding = PaddingValues(all = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "-",
+                                                fontSize = 25.sp
+                                            )
+                                        }
+                                    }
+                                }
+
+                                TextField(
+                                    value = numInputAmpAmp,
+                                    onValueChange = {
+                                        numInputAmpAmp = it
+                                        if (isPlaying) {
+                                            restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                        }
+                                    },
+                                    label = { Text("Enter volume wave effect amplitude\n(0-32767, 0 to disable)") }
+                                )
+
+                                TextField(
+                                    value = numInputAmpFreq,
+                                    onValueChange = {
+                                        numInputAmpFreq = it
+                                        if (isPlaying) {
+                                            restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                        }
+                                    },
+                                    label = { Text("Enter volume wave effect frequency\n(0-5, 0 to disable)") }
+                                )
+
+                                Text(
+                                    text = "Choose noise type",
+                                    fontSize = 20.sp
+                                )
+
+                                SingleChoiceSegmentedButtonRow {
+                                    options.forEachIndexed { index, label ->
+                                        SegmentedButton(
+                                            shape = SegmentedButtonDefaults.itemShape(
+                                                index = index,
+                                                count = options.size
+                                            ),
+                                            onClick = {
+                                                selectedIndex = index
+                                                noiseType = options[selectedIndex]
+                                                if (isPlaying) {
+                                                    restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+                                                }
+                                            },
+                                            selected = index == selectedIndex,
+                                            label = { Text(label) }
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.size(5.dp))
+                                Text(
+                                    text = "Percent of noise in the tone\n(0 = pure tone, 100 = pure noise)\nRestart playing after moving slider",
+                                    fontSize = 20.sp
+                                )
+
                                 Text(text = noisePct.toInt().toString())
                                 Slider(
                                     value = noisePct,
-                                    onValueChange = { noisePct = it },
+                                    onValueChange = {
+                                        noisePct = it
+//                                        if (isPlaying) {
+//                                            restartPlaying(numInputFreq,numInputAmpAmp,numInputAmpFreq,noisePct,noiseType)
+//                                        }
+                                    },
                                     valueRange = 0f..100f,
-                                    steps = 100
+                                    steps = 100,
+                                    modifier = Modifier.height(20.dp)
                                 )
 
                                 Row(
@@ -265,14 +611,14 @@ class MainActivity : ComponentActivity() {
                                                 scope.launch {
                                                     startPlaying()
                                                     DataStoreManager(baseContext).saveToDataStore(
-                                                        numInputFreq.toFloat(),
+                                                        numInputFreq.toInt(),
                                                         numInputAmpAmp.toFloat(),
                                                         numInputAmpFreq.toFloat(),
                                                         noisePct,
                                                         noiseType
                                                     )
                                                     playback(
-                                                        numInputFreq.toFloat(),
+                                                        numInputFreq.toInt(),
                                                         numInputAmpAmp.toFloat(),
                                                         numInputAmpFreq.toFloat(),
                                                         noisePct,
@@ -317,7 +663,7 @@ class MainActivity : ComponentActivity() {
     //  https://rajat-r-bapuri.github.io/DSP-Lab-Android-Demos/Android_Demos/kotlin_implementations/Sine_Wave_Demo1/
 //  https://stackoverflow.com/questions/26963342/generating-colors-of-noise-in-java
     private suspend fun playback(
-        frequencyTone: Float,
+        frequencyTone: Int,
         amplitudeDelta: Float,
         amplitudeFrequency: Float,
         noisePct: Float,
@@ -397,6 +743,33 @@ class MainActivity : ComponentActivity() {
         if (isPlaying) {
             isPlaying = false
             noiseTrack.stop()
+        }
+    }
+
+    private fun restartPlaying(
+        numInputFreq: String,
+        numInputAmpAmp: String,
+        numInputAmpFreq: String,
+        noisePct: Float,
+        noiseType: String
+    ) {
+        scope.launch {
+            DataStoreManager(baseContext).saveToDataStore(
+                numInputFreq.toInt(),
+                numInputAmpAmp.toFloat(),
+                numInputAmpFreq.toFloat(),
+                noisePct,
+                noiseType
+            )
+            stopPlaying()
+            startPlaying()
+            playback(
+                numInputFreq.toInt(),
+                numInputAmpAmp.toFloat(),
+                numInputAmpFreq.toFloat(),
+                noisePct,
+                noiseType
+            )
         }
     }
 }

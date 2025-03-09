@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
@@ -15,7 +16,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class DataStoreManager(private val context: Context) {
     //    https://medium.com/jetpack-composers/android-jetpack-datastore-5dfdfea4a3ea
     companion object {
-        val TONE_FREQUENCY = floatPreferencesKey("tone_frequency")
+        val TONE_FREQUENCY = intPreferencesKey("tone_frequency")
         val WAVE_AMP = floatPreferencesKey("wave_amp")
         val WAVE_FREQ = floatPreferencesKey("wave_freq")
         val NOISE_PCT = floatPreferencesKey("noise_pct")
@@ -23,7 +24,7 @@ class DataStoreManager(private val context: Context) {
     }
 
     suspend fun saveToDataStore(
-        frequencyTone: Float,
+        frequencyTone: Int,
         amplitudeDelta: Float,
         amplitudeFrequency: Float,
         noisePct: Float,
@@ -39,8 +40,8 @@ class DataStoreManager(private val context: Context) {
     private val preferences = runBlocking { context.dataStore.data.first() }
 
     //    https://amir-raza.medium.com/preference-datastore-android-an-implementation-guide-610645153696
-    fun getFromDataStoreFT(): Float {
-        return preferences[TONE_FREQUENCY] ?: "440".toFloat()
+    fun getFromDataStoreFT(): Int {
+        return preferences[TONE_FREQUENCY] ?: "440".toInt()
 //        val ft = context.dataStore.data.map { prefs -> prefs[TONE_FREQUENCY] ?: "440".toFloat() }
 //        return ft.toString().toFloat()
     }
